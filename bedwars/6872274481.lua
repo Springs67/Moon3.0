@@ -57,9 +57,13 @@ local lighting = game.Lighting
 
 function runcode(func)
 	pcall(function()
-		func()
+		local function func2()
+			func()
+		end
+		coroutine.wrap(func2)()
 	end)
 end
+
 function Chat(msg)
 	local args = { [1] = msg, [2] = "All" }
 	game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer(unpack(args))
@@ -155,7 +159,7 @@ runcode(function()
 			MakeModule("AutoSprint")
 			isSprinting = true
 			repeat wait()
-				if (not events.SprintController.sprinting) then
+				if (not events.SprintController.sprinting) and hum.Health ~= 1 then
 					events.SprintController:startSprinting()
 				end
 			until not isSprinting
@@ -170,7 +174,7 @@ runcode(function()
 	local SpeedRepeat = false
 	local You = lplr.Name
 	local speed1 = 0.06
-	MovementSection:NewToggle("Speed - Mode 1", "cframe mode 1!1!1", function(enabled)
+	MovementSection:NewToggle("Speed", "cframe mode 1!1!1", function(enabled)
 		if enabled then
 			MakeModule("Speed")
 			SpeedRepeat = true
@@ -199,16 +203,17 @@ runcode(function()
 end)
 
 runcode(function()
-	local function LongjumpToggleKey()
+	runcode(function()
 		pcall(function()
 			repeat task.wait(0.49)
 				if _G.LongjumpEnabled == true then
-					hum:ChangeState(3)
+					if hum.Health ~= 1 then
+						hum:ChangeState(3)
+					end
 				end
 			until false
 		end)
-	end
-	coroutine.wrap(LongjumpToggleKey)()
+	end)
 	MovementSection:NewKeybind("Longjump - Bind", "very long jump fr", Enum.KeyCode.J, function()
 		_G.LongjumpEnabled = not _G.LongjumpEnabled
 		if _G.LongjumpEnabled == true then
@@ -220,16 +225,15 @@ runcode(function()
 end)
 
 runcode(function()
-	local function HighjumpToggleKey()
+	runcode(function()
 		repeat task.wait()
 			pcall(function()
-				if _G.HighjumpEnabled == true then
+				if _G.HighjumpEnabled == true and hum.Health ~= 1 then
 					hrp.CFrame = hrp.CFrame * CFrame.new(0, 30, 0)
 				end
 			end)
 		until false
-	end
-	coroutine.wrap(HighjumpToggleKey)()
+	end)
 	MovementSection:NewKeybind("Highjump - Bind", "very high jump fr", Enum.KeyCode.H, function()
 		_G.HighjumpEnabled = not _G.HighjumpEnabled
 		if _G.HighjumpEnabled == true then
@@ -241,10 +245,10 @@ runcode(function()
 end)
 
 runcode(function()
-	local function FlightToggleKey()
+	runcode(function()
 		repeat task.wait()
 			pcall(function()
-				if _G.FlightEnabled == true then
+				if _G.FlightEnabled == true and hum.Health ~= 1 then
 					game.Workspace.Gravity = 0
 					if uis:IsKeyDown(Enum.KeyCode.Space) then
 						prpart.CFrame += Vector3.new(0, 0.7, 0)
@@ -257,14 +261,13 @@ runcode(function()
 				end
 			end)
 		until false
-	end
-	coroutine.wrap(FlightToggleKey)()
+	end)
 	MovementSection:NewKeybind("Flight - Bind", "coolio", Enum.KeyCode.R, function()
 		_G.FlightEnabled = not _G.FlightEnabled
-		if _G.FlightEnabled == true then
+		if _G.FlightEnabled == true and hum.Health ~= 1 then
 			prpart.Velocity = Vector3.new(0,0,0)
 		end
-		if _G.FlightEnabled == true then
+		if _G.FlightEnabled == true and hum.Health ~= 1 then
 			MakeModule("Flight")
 		else
 			RemoveModule("Flight")
@@ -295,8 +298,8 @@ runcode(function()
 			MakeModule("SlowFall")
 			_G.SlowFallEnabled = true
 			repeat
-				if _G.SlowFallEnabled == true then
-					if hum.FloorMaterial == Enum.Material.Air then
+				if _G.SlowFallEnabled == true and hum.Health ~= 1 then
+					if hum.FloorMaterial == Enum.Material.Air and hum.Health ~= 1 then
 						lplr.Character.PrimaryPart.Velocity = Vector3.new(lplr.Character.PrimaryPart.Velocity.X,2,lplr.Character.PrimaryPart.Velocity.Z)
 					end
 				end

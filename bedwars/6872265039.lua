@@ -26,7 +26,7 @@ function MakeModule(name)
 	TextLabel.BorderSizePixel = 0
 	TextLabel.Size = UDim2.new(0, 200, 0, 50)
 	TextLabel.Font = Enum.Font.Merriweather
-	TextLabel.Text = name
+	TextLabel.Text = name 
 	TextLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 	TextLabel.TextSize = 25
 	TextLabel.TextStrokeTransparency = 0
@@ -65,131 +65,16 @@ function Chat(msg)
 	game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer(unpack(args))
 end
 
---vape stuff lol
-local KnitClient = debug.getupvalue(require(lplr.PlayerScripts.TS.knit).setup, 6)
-local Client = require(game:GetService("ReplicatedStorage").TS.remotes).default.Client
-local getremote = function(tab)
-	for i,v in pairs(tab) do
-		if v == "Client" then
-			return tab[i + 1]
-		end
-	end
-	return ""
-end
-local repstorage = game:GetService("ReplicatedStorage")
-local KnockbackTable = debug.getupvalue(require(game:GetService("ReplicatedStorage").TS.damage["knockback-util"]).KnockbackUtil.calculateKnockbackVelocity, 1)
-local cstore = require(lplr.PlayerScripts.TS.ui.store).ClientStore
-local bedwars = { -- vape
-	["SprintController"] = KnitClient.Controllers.SprintController,
-	["CombatConstant"] = require(repstorage.TS.combat["combat-constant"]).CombatConstant,
-	["SwordController"] = KnitClient.Controllers.SwordController,
-	["ClientHandler"] = Client,
-	["AppController"] = require(repstorage["rbxts_include"]["node_modules"]["@easy-games"]["game-core"].out.client.controllers["app-controller"]).AppController,
-	["SwordRemote"] = getremote(debug.getconstants((KnitClient.Controllers.SwordController).attackEntity)),
+local knitRecieved, knit
+knitRecieved, knit = pcall(function()
+	repeat task.wait()
+		return debug.getupvalue(require(game:GetService("Players")[game.Players.LocalPlayer.Name].PlayerScripts.TS.knit).setup, 6)
+	until knitRecieved
+end)
+
+local events = {
+	SprintController = knit.Controllers["SprintController"]
 }
-function isalive(player)
-	local character = player.Character
-	if not character then
-		-- the player does not have a character
-		return false
-	end
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if not humanoid then
-		-- the character does not have a humanoid object
-		return false
-	end
-	return humanoid.Health > 0
-end
-
-local BedwarsSwords = require(game:GetService("ReplicatedStorage").TS.games.bedwars["bedwars-swords"]).BedwarsSwords
-function hashFunc(instance) 
-	return {value = instance}
-end
-
-
-local function GetInventory(plr)
-	if not plr then
-		return {inv = {}, armor = {}}
-	end
-	local success, result = pcall(function()
-		return require(game:GetService("ReplicatedStorage").TS.inventory["inventory-util"]).InventoryUtil.getInventory(plr)
-	end)
-	if not success then
-		return {items = {}, armor = {}}
-	end
-	if plr.Character and plr.Character:FindFirstChild("InventoryFolder") then
-		local invFolder = plr.Character:FindFirstChild("InventoryFolder").Value
-		if not invFolder then return result end
-
-		for _, item in pairs(result) do
-			for _, subItem in pairs(item) do
-				if typeof(subItem) == "table" and subItem.itemType then
-					subItem.instance = invFolder:FindFirstChild(subItem.itemType)
-				end
-			end
-
-			if typeof(item) == "table" and item.itemType then
-				item.instance = invFolder:FindFirstChild(item.itemType)
-			end
-		end
-	end
-	return result
-end
-
--- omg 1 1 1 11!!
-local function getSword()
-	-- Initialize the highest power value and the returning item to nil.
-	local highestPower = -9e9
-	local returningItem = nil
-	-- Get the inventory of the local player.
-	local inventory = GetInventory(lplr)
-	-- Loop through the items in the inventory.
-	for _, item in pairs(inventory.items) do
-		-- Check if the item is a sword.
-		local power = table.find(BedwarsSwords, item.itemType)
-		if not power then
-			-- Skip the item if it is not a sword.
-			continue
-		end
-		-- Check if the power of the current sword is higher than the current highest power.
-		if power > highestPower then
-			-- Set the returning item to the current sword and update the highest power value.
-			returningItem = item
-			highestPower = power
-		end
-	end
-	-- Return the item with the highest power.
-	return returningItem
-end
-
-local function getNearestPlayer(maxDist)
-	-- define the position or object that you want to use as the reference point
-	local referencePoint = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-	-- get the list of players currently connected to the game
-	local players = game:GetService("Players"):GetPlayers()
-	-- initialize variables to store the nearest player and their distance
-	local nearestPlayer = nil
-	local nearestDistance = maxDist
-	-- loop through all the players and find the nearest one
-	for _, player in pairs(players) do
-		if player ~= game.Players.LocalPlayer then
-			-- calculate the distance between the reference point and the player
-			local distance = (referencePoint - player.Character.PrimaryPart.Position).magnitude
-			-- check if this player is closer than the current nearest player
-			if distance < nearestDistance then
-				-- update the nearest player and distance
-				nearestPlayer = player
-				nearestDistance = distance
-			end
-		end
-	end
-	if nearestPlayer then
-		return nearestPlayer
-	end
-end
-
-
---rest of script ig
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 local Window = Library.CreateLib("Moon 3.0", "DarkTheme")
@@ -213,8 +98,8 @@ runcode(function()
 			MakeModule("AutoSprint")
 			isSprinting = true
 			repeat wait()
-				if (not bedwars["SprintController"].sprinting) then
-					bedwars["SprintController"]:startSprinting()
+				if (not events.SprintController.sprinting) then
+					events.SprintController:startSprinting()
 				end
 			until not isSprinting
 		else

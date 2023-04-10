@@ -73,17 +73,11 @@ knitRecieved, knit = pcall(function()
 end)
 
 local events = {
-	HangGliderController = knit.Controllers["HangGliderController"],
 	SprintController = knit.Controllers["SprintController"],
-	JadeHammerController = knit.Controllers["JadeHammerController"],
-	PictureModeController = knit.Controllers["PictureModeController"],
 	SwordController = knit.Controllers["SwordController"],
 	GroundHit = game:GetService("ReplicatedStorage").rbxts_include.node_modules:FindFirstChild("@rbxts").net.out._NetManaged.GroundHit,
 	Reach = require(game:GetService("ReplicatedStorage").TS.combat["combat-constant"]),
-	Knockback = debug.getupvalue(require(game:GetService("ReplicatedStorage").TS.damage["knockback-util"]).KnockbackUtil.calculateKnockbackVelocity, 1),  -- this took me forever for to figure out :(
-	report = knit.Controllers["report-controller"],
-	PlacementCPS = require(game.ReplicatedStorage.TS["shared-constants"]).CpsConstants,
-	SwordHit = game:GetService("ReplicatedStorage").rbxts_include.node_modules:FindFirstChild("@rbxts").net.out._NetManaged.SwordHit,
+	Knockback = debug.getupvalue(require(game:GetService("ReplicatedStorage").TS.damage["knockback-util"]).KnockbackUtil.calculateKnockbackVelocity, 1)
 }
 
 --rest of script ig
@@ -138,6 +132,18 @@ runcode(function()
 			events.Knockback.kbDirectionStrength = 100
 			events.Knockback.kbUpwardStrength = 100
 			RemoveModule("Velocity")
+		end
+	end)
+end)
+
+runcode(function()
+	CombatSection:NewToggle("Reach", "higher reach than legits ez momento", function(state)
+		if state then
+			MakeModule("Reach")
+			events.Reach.RAYCAST_SWORD_CHARACTER_DISTANCE = 18
+		else
+			RemoveModule("Reach")
+			events.Reach.RAYCAST_SWORD_CHARACTER_DISTANCE = 14
 		end
 	end)
 end)

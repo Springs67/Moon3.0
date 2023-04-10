@@ -1,6 +1,5 @@
 repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer.Character
 
-
 local MoonArray = Instance.new("ScreenGui")
 local InvisFrame = Instance.new("Frame")
 local UIListLayout = Instance.new("UIListLayout")
@@ -36,6 +35,14 @@ function RemoveModule(name)
 	if InvisFrame:FindFirstChild(name) then
 		InvisFrame:FindFirstChild(name):Remove()
 	end
+end
+
+function notify(name, desc, time1)
+	game.StarterGui:SetCore("SendNotification", {
+		Title = name;
+		Text = desc;
+		Duration = time1;
+	})
 end
 
 --Enabled
@@ -487,3 +494,8 @@ runcode(function()
 	end)
 end)
 --]]
+
+notify("Moon", "Loaded Moon..", 3)
+notify("Moon", "Dm me on my 'Rekt' Account to tell me anything you want", 10)
+notify("Moon", "More modules and features soon", 5)
+notify("Moon", "join the discord @.gg/qYUZae7CVj", 10)

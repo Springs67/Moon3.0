@@ -7,6 +7,7 @@ local UIListLayout = Instance.new("UIListLayout")
 MoonArray.Name = "MoonArray"
 MoonArray.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 MoonArray.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+MoonArray.ResetOnSpawn = false
 InvisFrame.Name = "InvisFrame"
 InvisFrame.Parent = MoonArray
 InvisFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -377,6 +378,7 @@ runcode(function()
 			MoonLogo.Name = "MoonLogo"
 			MoonLogo.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 			MoonLogo.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+			MoonLogo.ResetOnSpawn = false
 			Frame.Parent = MoonLogo
 			Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 			Frame.BackgroundTransparency = 0.500

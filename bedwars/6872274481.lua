@@ -7,6 +7,7 @@ local UIListLayout = Instance.new("UIListLayout")
 MoonArray.Name = "MoonArray"
 MoonArray.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 MoonArray.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+MoonArray.ResetOnSpawn = false
 InvisFrame.Name = "InvisFrame"
 InvisFrame.Parent = MoonArray
 InvisFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -25,7 +26,7 @@ function MakeModule(name)
 	TextLabel.BorderSizePixel = 0
 	TextLabel.Size = UDim2.new(0, 200, 0, 50)
 	TextLabel.Font = Enum.Font.Merriweather
-	TextLabel.Text = name
+	TextLabel.Text = name 
 	TextLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 	TextLabel.TextSize = 25
 	TextLabel.TextStrokeTransparency = 0
@@ -348,13 +349,13 @@ end)
 
 runcode(function()
 	local function LongjumpToggleKey()
-		repeat task.wait()
-			if _G.LongjumpEnabled == true then
-				if hum.FloorMaterial ~= Enum.Material.Air then
+		pcall(function()
+			repeat task.wait(0.49)
+				if _G.LongjumpEnabled == true then
 					hum:ChangeState(3)
 				end
-			end
-		until false
+			until false
+		end)
 	end
 	coroutine.wrap(LongjumpToggleKey)()
 	MovementSection:NewKeybind("Longjump - Bind", "very long jump fr", Enum.KeyCode.J, function()
@@ -370,9 +371,11 @@ end)
 runcode(function()
 	local function HighjumpToggleKey()
 		repeat task.wait()
-			if _G.HighjumpEnabled == true then
-				hrp.CFrame = hrp.CFrame * CFrame.new(0, 30, 0)
-			end
+			pcall(function()
+				if _G.HighjumpEnabled == true then
+					hrp.CFrame = hrp.CFrame * CFrame.new(0, 30, 0)
+				end
+			end)
 		until false
 	end
 	coroutine.wrap(HighjumpToggleKey)()
@@ -389,17 +392,19 @@ end)
 runcode(function()
 	local function FlightToggleKey()
 		repeat task.wait()
-			if _G.FlightEnabled == true then
-				game.Workspace.Gravity = 0
-				if uis:IsKeyDown(Enum.KeyCode.Space) then
-					prpart.CFrame += Vector3.new(0, 0.7, 0)
+			pcall(function()
+				if _G.FlightEnabled == true then
+					game.Workspace.Gravity = 0
+					if uis:IsKeyDown(Enum.KeyCode.Space) then
+						prpart.CFrame += Vector3.new(0, 0.7, 0)
+					end
+					if uis:IsKeyDown(Enum.KeyCode.LeftShift) then
+						prpart.CFrame += Vector3.new(0, -0.7, 0)
+					end
+				else
+					game.Workspace.Gravity = 196.2
 				end
-				if uis:IsKeyDown(Enum.KeyCode.LeftShift) then
-					prpart.CFrame += Vector3.new(0, -0.7, 0)
-				end
-			else
-				game.Workspace.Gravity = 196.2
-			end
+			end)
 		until false
 	end
 	coroutine.wrap(FlightToggleKey)()
@@ -485,6 +490,7 @@ runcode(function()
 			MoonLogo.Name = "MoonLogo"
 			MoonLogo.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 			MoonLogo.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+			MoonLogo.ResetOnSpawn = false
 			Frame.Parent = MoonLogo
 			Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 			Frame.BackgroundTransparency = 0.500

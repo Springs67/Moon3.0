@@ -65,129 +65,26 @@ function Chat(msg)
 	game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer(unpack(args))
 end
 
---vape stuff lol
-local KnitClient = debug.getupvalue(require(lplr.PlayerScripts.TS.knit).setup, 6)
-local Client = require(game:GetService("ReplicatedStorage").TS.remotes).default.Client
-local getremote = function(tab)
-	for i,v in pairs(tab) do
-		if v == "Client" then
-			return tab[i + 1]
-		end
-	end
-	return ""
-end
-local repstorage = game:GetService("ReplicatedStorage")
-local KnockbackTable = debug.getupvalue(require(game:GetService("ReplicatedStorage").TS.damage["knockback-util"]).KnockbackUtil.calculateKnockbackVelocity, 1)
-local cstore = require(lplr.PlayerScripts.TS.ui.store).ClientStore
-local bedwars = { -- vape
-	["SprintController"] = KnitClient.Controllers.SprintController,
-	["CombatConstant"] = require(repstorage.TS.combat["combat-constant"]).CombatConstant,
-	["SwordController"] = KnitClient.Controllers.SwordController,
-	["ClientHandler"] = Client,
-	["AppController"] = require(repstorage["rbxts_include"]["node_modules"]["@easy-games"]["game-core"].out.client.controllers["app-controller"]).AppController,
-	["SwordRemote"] = getremote(debug.getconstants((KnitClient.Controllers.SwordController).attackEntity)),
+local knitRecieved, knit
+knitRecieved, knit = pcall(function()
+	repeat task.wait()
+		return debug.getupvalue(require(game:GetService("Players")[game.Players.LocalPlayer.Name].PlayerScripts.TS.knit).setup, 6)
+	until knitRecieved
+end)
+
+local events = {
+	HangGliderController = knit.Controllers["HangGliderController"],
+	SprintController = knit.Controllers["SprintController"],
+	JadeHammerController = knit.Controllers["JadeHammerController"],
+	PictureModeController = knit.Controllers["PictureModeController"],
+	SwordController = knit.Controllers["SwordController"],
+	GroundHit = game:GetService("ReplicatedStorage").rbxts_include.node_modules:FindFirstChild("@rbxts").net.out._NetManaged.GroundHit,
+	Reach = require(game:GetService("ReplicatedStorage").TS.combat["combat-constant"]),
+	Knockback = debug.getupvalue(require(game:GetService("ReplicatedStorage").TS.damage["knockback-util"]).KnockbackUtil.calculateKnockbackVelocity, 1),  -- this took me forever for to figure out :(
+	report = knit.Controllers["report-controller"],
+	PlacementCPS = require(game.ReplicatedStorage.TS["shared-constants"]).CpsConstants,
+	SwordHit = game:GetService("ReplicatedStorage").rbxts_include.node_modules:FindFirstChild("@rbxts").net.out._NetManaged.SwordHit,
 }
-function isalive(player)
-	local character = player.Character
-	if not character then
-		-- the player does not have a character
-		return false
-	end
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if not humanoid then
-		-- the character does not have a humanoid object
-		return false
-	end
-	return humanoid.Health > 0
-end
-
-local BedwarsSwords = require(game:GetService("ReplicatedStorage").TS.games.bedwars["bedwars-swords"]).BedwarsSwords
-function hashFunc(instance) 
-	return {value = instance}
-end
-
-
-local function GetInventory(plr)
-	if not plr then
-		return {inv = {}, armor = {}}
-	end
-	local success, result = pcall(function()
-		return require(game:GetService("ReplicatedStorage").TS.inventory["inventory-util"]).InventoryUtil.getInventory(plr)
-	end)
-	if not success then
-		return {items = {}, armor = {}}
-	end
-	if plr.Character and plr.Character:FindFirstChild("InventoryFolder") then
-		local invFolder = plr.Character:FindFirstChild("InventoryFolder").Value
-		if not invFolder then return result end
-
-		for _, item in pairs(result) do
-			for _, subItem in pairs(item) do
-				if typeof(subItem) == "table" and subItem.itemType then
-					subItem.instance = invFolder:FindFirstChild(subItem.itemType)
-				end
-			end
-
-			if typeof(item) == "table" and item.itemType then
-				item.instance = invFolder:FindFirstChild(item.itemType)
-			end
-		end
-	end
-	return result
-end
-
--- omg 1 1 1 11!!
-local function getSword()
-	-- Initialize the highest power value and the returning item to nil.
-	local highestPower = -9e9
-	local returningItem = nil
-	-- Get the inventory of the local player.
-	local inventory = GetInventory(lplr)
-	-- Loop through the items in the inventory.
-	for _, item in pairs(inventory.items) do
-		-- Check if the item is a sword.
-		local power = table.find(BedwarsSwords, item.itemType)
-		if not power then
-			-- Skip the item if it is not a sword.
-			continue
-		end
-		-- Check if the power of the current sword is higher than the current highest power.
-		if power > highestPower then
-			-- Set the returning item to the current sword and update the highest power value.
-			returningItem = item
-			highestPower = power
-		end
-	end
-	-- Return the item with the highest power.
-	return returningItem
-end
-
-local function getNearestPlayer(maxDist)
-	-- define the position or object that you want to use as the reference point
-	local referencePoint = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-	-- get the list of players currently connected to the game
-	local players = game:GetService("Players"):GetPlayers()
-	-- initialize variables to store the nearest player and their distance
-	local nearestPlayer = nil
-	local nearestDistance = maxDist
-	-- loop through all the players and find the nearest one
-	for _, player in pairs(players) do
-		if player ~= game.Players.LocalPlayer then
-			-- calculate the distance between the reference point and the player
-			local distance = (referencePoint - player.Character.PrimaryPart.Position).magnitude
-			-- check if this player is closer than the current nearest player
-			if distance < nearestDistance then
-				-- update the nearest player and distance
-				nearestPlayer = player
-				nearestDistance = distance
-			end
-		end
-	end
-	if nearestPlayer then
-		return nearestPlayer
-	end
-end
-
 
 --rest of script ig
 
@@ -207,74 +104,22 @@ local MiscSection = Misc:NewSection("Misc")
 local ExploitsSection = Exploits:NewSection("Exploits")
 
 runcode(function()
-	local Distance = {["Value"] = 18}
 	local AuraEnabled = false
 	CombatSection:NewToggle("KillAura", "attacks players around you.", function(enabled)
 		if enabled then
 			MakeModule("Aura")
 			AuraEnabled = true
-			local anims = {
-				Normal = {
-					{CFrame = CFrame.new(1, -1, 2) * CFrame.Angles(math.rad(295), math.rad(55), math.rad(290)), Time = 0.2},
-					{CFrame = CFrame.new(-1, 1, -2.2) * CFrame.Angles(math.rad(200), math.rad(60), math.rad(1)), Time = 0.2}
-				},
-			}
-			local origC0 = cam.Viewmodel.RightHand.RightWrist.C0
-			local ui2 = Instance.new("ScreenGui")
-			local nearestID = nil
-			ui2.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 			repeat
-				if isalive(lplr) and lplr.Character:FindFirstChild("Humanoid").Health > 0.1 then
-					for _,v in pairs(game.Players:GetPlayers()) do
-						if v ~= lplr then
-							nearestID = v
-							target = v.Name
-							if v.Team ~= lplr.Team and v ~= lplr and isalive(v) and v.Character:FindFirstChild("HumanoidRootPart") and (v.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude < 20 then
-								local sword = getSword()
-								if sword ~= nil then
-									function swing()
-										spawn(function()
-											pcall(function()
-												for i,v in pairs(anims.Normal) do 
-													anim = game:GetService("TweenService"):Create(cam.Viewmodel.RightHand.RightWrist, TweenInfo.new(v.Time), {C0 = origC0 * v.CFrame})
-													anim:Play()
-													task.wait(v.Time)
-												end
-											end)
-										end)
-									end
-									coroutine.wrap(swing)()
-
-									Client:Get(bedwars["SwordRemote"]):SendToServer({
-										["weapon"] = sword.tool,
-										["entityInstance"] = v.Character,																																																																																							
-										["validate"] = {
-											["raycast"] = {
-												["cameraPosition"] = hashFunc(cam.CFrame.Position),
-												["cursorDirection"] = hashFunc(Ray.new(cam.CFrame.Position, v.Character:FindFirstChild("HumanoidRootPart").Position).Unit.Direction)
-											},
-											["targetPosition"] = hashFunc(v.Character:FindFirstChild("HumanoidRootPart").Position),
-											["selfPosition"] = hashFunc(lplr.Character:FindFirstChild("HumanoidRootPart").Position + ((lplr.Character:FindFirstChild("HumanoidRootPart").Position - v.Character:FindFirstChild("HumanoidRootPart").Position).magnitude > 14 and (CFrame.lookAt(lplr.Character:FindFirstChild("HumanoidRootPart").Position, v.Character:FindFirstChild("HumanoidRootPart").Position).LookVector * 4) or Vector3.new(0, 0, 0)))
-										},
-										["chargedAttack"] = {["chargeRatio"] = 1}
-									})
-								end
+				for i,v in pairs(game.Players:GetPlayers()) do
+					if (v.Character) and (game.Players.LocalPlayer.Character) and v ~= game.Players.LocalPlayer then
+						runcode(function()
+							if (v.Character.PrimaryPart.Position - lplr.Character.PrimaryPart.Position).Magnitude < 14 and v.Character.Humanoid.health > 1 and lplr.Character.Humanoid.Health > 1 and v.Team ~= lplr.Team then
+								events["SwordController"]:swingSwordAtMouse()
 							end
-						end
-					end
-				end
-				task.wait(0.22);	
-				bedwars["SwordController"].lastAttack = game:GetService("Workspace"):GetServerTimeNow() - 0.11
-				local function redo()
-					if cam.Viewmodel.RightHand.RightWrist.C0 ~= origC0 then
-						pcall(function()
-							anim:Cancel()
 						end)
-						anim2 = game:GetService("TweenService"):Create(cam.Viewmodel.RightHand.RightWrist, TweenInfo.new(0.364), {C0 = origC0})
-						anim2:Play()
 					end
 				end
-				coroutine.wrap(redo)()
+				task.wait()
 			until not AuraEnabled
 		else
 			AuraEnabled = false
@@ -287,11 +132,11 @@ runcode(function()
 	CombatSection:NewToggle("Velocity", "Allows you to not take knockback", function(enabled)
 		if enabled then
 			MakeModule("Velocity")
-			KnockbackTable["kbDirectionStrength"] = 0
-			KnockbackTable["kbUpwardStrength"] = 0
+			events.Knockback.kbDirectionStrength = 0
+			events.Knockback.kbUpwardStrength = 0
 		else
-			KnockbackTable["kbDirectionStrength"] = 100
-			KnockbackTable["kbUpwardStrength"] = 100
+			events.Knockback.kbDirectionStrength = 100
+			events.Knockback.kbUpwardStrength = 100
 			RemoveModule("Velocity")
 		end
 	end)
@@ -304,8 +149,8 @@ runcode(function()
 			MakeModule("AutoSprint")
 			isSprinting = true
 			repeat wait()
-				if (not bedwars["SprintController"].sprinting) then
-					bedwars["SprintController"]:startSprinting()
+				if (not events.SprintController.sprinting) then
+					events.SprintController:startSprinting()
 				end
 			until not isSprinting
 		else
